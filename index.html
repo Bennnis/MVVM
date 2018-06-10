@@ -7,11 +7,12 @@
 
 <body>
     <div id='app'>
-        <p>{{ name }}</p>
-        <p t-if="age > 18">已成年</p>
-        <div v-for="lesson in lessons">
-            {{ lesson.name }}
-        </div>
+        <p>hello {{ name }}</p>
+        <p>{{ ob.name }}</p>
+        <!-- <p t-if="age > 18">已成年</p> -->
+        <!-- <div v-for="lesson in lessons"> -->
+            <!-- {{ lesson.name }} -->
+        <!-- </div> -->
     </div>
 </body>
 <script src="./src/compile.js"></script>
@@ -22,6 +23,9 @@
         data: {
             name: 'TT MVVM',
             age: 20,
+            ob: {
+                name: 'hahaha'
+            },
             lessons: [
                 { name: 'lesson1' },
                 { name: 'lesson2' },

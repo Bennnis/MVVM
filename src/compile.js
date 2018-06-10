@@ -7,25 +7,24 @@ class Compile {
 
         //实现 M => V 的核心方法
         this.m2v(this.$fragmentEl)
+
+        node.appendChild(this.$fragmentEl)
     }
 
     /* 
     * 1. 遍历子节点处理不同类型的元素 ps: 文本节点编译 {{ varible }}，dom节点编译指令集
-    * 3. 递归处理
+    * 2. 递归处理
     */
     m2v(el) {
 
         var childNodes = el.childNodes,
             self = this
-        //正则匹配文本模板
-        var reg = /\{\{(.*)\}\}/
 
         childNodes.forEach(function (node) {
-            console.log(node)
             if (node.nodeType === 1) {
-                console.log('dom element')
+                // console.log('dom element')
             } else if (node.nodeType === 3) {
-                console.log('text element')
+                self.compileText(node)
             }
 
             //判断是否存在子节点并进行递归处理
@@ -43,5 +42,41 @@ class Compile {
         }
 
         return fragment
+    }
+
+    compileText(textNode) {
+        var text = textNode.textContent
+        //正则匹配文本模板
+        var reg = /\{\{(.*)\}\}/
+
+        if (!reg.test(text)) return
+        
+        Updater.textUpdater(textNode, text.replace(RegExp.$1, this._getVMVal(RegExp.$1.trim())).replace(/\{|\}/g, ''))
+    } 
+
+    compileElement() {
+        
+    }
+
+    _getVMVal(exp) {
+        var val = this.$vm
+
+        var exps = exp.split('.')
+        if (exps && exps.length > 1) {
+            exps.some(function(childExp) {            
+                val = val[childExp]
+                if (typeof val !== 'object') return true
+            })
+        } else {
+            val = val[exp]
+        }
+
+        return val
+    }
+}
+
+var Updater = {
+    textUpdater (node, value) {
+        node.textContent = value
     }
 }
