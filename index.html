@@ -1,0 +1,32 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>TT Framework</title>
+</head>
+
+<body>
+    <div id='app'>
+        <p>{{ name }}</p>
+        <p t-if="age > 18">已成年</p>
+        <div v-for="lesson in lessons">
+            {{ lesson.name }}
+        </div>
+    </div>
+</body>
+<script>
+    new TT({
+        el: '#app',
+        data: {
+            name: 'TT MVVM',
+            age: 20,
+            lessons: [
+                { name: 'lesson1' },
+                { name: 'lesson2' },
+                { name: 'lesson3' }
+            ]
+        }
+    })
+</script>
+
+</html>
