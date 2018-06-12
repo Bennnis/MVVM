@@ -7,21 +7,27 @@
 
 <body>
     <div id='app'>
-        <p>hello {{ name }}</p>
+        <p>Hello ! my name is: {{ name }}</p>
+        <p v-text="age"></p>
         <p>{{ ob.name }}</p>
+        <p>{{ lessons[0].name }}</p>
+        <input type="text" v-model="lessons[0].name">
         <!-- <p t-if="age > 18">已成年</p> -->
         <!-- <div v-for="lesson in lessons"> -->
             <!-- {{ lesson.name }} -->
         <!-- </div> -->
     </div>
 </body>
+<script src="./src/dep.js"></script>
+<script src="./src/observe.js"></script>
+<script src="./src/watcher.js"></script>
 <script src="./src/compile.js"></script>
 <script src="./src/core.js"></script>
 <script>
     new TT({
         el: '#app',
         data: {
-            name: 'TT MVVM',
+            name: 'TT',
             age: 20,
             ob: {
                 name: 'hahaha'
@@ -31,6 +37,13 @@
                 { name: 'lesson2' },
                 { name: 'lesson3' }
             ]
+        },
+        
+        mounted() {
+            setTimeout(() => {
+                this.age = 18
+                this.lessons[0].name = 'ojbk'
+            }, 2000)
         }
     })
 </script>

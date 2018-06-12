@@ -1,5 +1,11 @@
 class Compile {
     constructor(vm, node) {
+        this.dirMap = [
+            'v-text',
+            'v-if',
+            'v-model'
+        ]
+
         this.$vm = vm
 
         //将dom节点转换为fragment文档碎片，性能优化
@@ -22,7 +28,7 @@ class Compile {
 
         childNodes.forEach(function (node) {
             if (node.nodeType === 1) {
-                // console.log('dom element')
+                self.compileElement(node)
             } else if (node.nodeType === 3) {
                 self.compileText(node)
             }
@@ -50,33 +56,114 @@ class Compile {
         var reg = /\{\{(.*)\}\}/
 
         if (!reg.test(text)) return
-        
-        Updater.textUpdater(textNode, text.replace(RegExp.$1, this._getVMVal(RegExp.$1.trim())).replace(/\{|\}/g, ''))
-    } 
 
-    compileElement() {
-        
+        CompileUtil.text(textNode, this.$vm, RegExp.$1)
     }
 
-    _getVMVal(exp) {
-        var val = this.$vm
+    //解析指令
+    compileElement(node) {
+        var self = this
 
-        var exps = exp.split('.')
-        if (exps && exps.length > 1) {
-            exps.some(function(childExp) {            
-                val = val[childExp]
-                if (typeof val !== 'object') return true
+        var arr = []
+        arr.slice.call(node.attributes).forEach(function (dir) {
+            if (self.isDirective(dir.name)) {
+                var dirName = dir.name
+                var dirValue = dir.nodeValue
+
+                var updaterFn = CompileUtil[dirName.split('-')[1]]
+                updaterFn(node, self.$vm, dirValue)
+            }
+        })
+    }
+
+    isDirective(dir) {
+        return this.dirMap.indexOf(dir) !== -1
+    }
+
+    isModelDirective(dir) {
+        return dir.trim() === 'v-model'
+    }
+}
+
+var CompileUtil = {
+    text(node, vm, exp) {
+        CompileUtil.bind(node, vm, exp, 'text')
+    },
+
+    model(node, vm, exp) {
+        CompileUtil.bind(node, vm, exp, 'model')
+
+        var self = CompileUtil,
+            val = CompileUtil._getVMVal(vm, exp);
+
+        node.addEventListener('input', function (e) {
+            var newValue = e.target.value;
+            if (val === newValue) {
+                return;
+            }
+
+            console.log(vm, exp, newValue, 'set')
+            self._setVMVal(vm, exp, newValue);
+        });
+    },
+
+    bind(node, vm, exp, dir) {
+        var updaterFn = Updater[dir + 'Updater']
+
+        updaterFn && updaterFn(node, this._getVMVal(vm, exp))
+
+        new Watcher(vm, exp, function (newVal, oldVal) {
+            updaterFn(node, newVal, oldVal)
+        })
+    },
+
+    _getVMVal(vm, exp) {
+        var val = vm
+
+        var exps = exp.split(/\.|\[|\]/)
+
+        if (exps.length > 1) {
+            exps.forEach(function (expChild) {
+                expChild = expChild.trim()
+                if (expChild !== '') {
+                    val = val[expChild]
+                }
             })
         } else {
-            val = val[exp]
+            val = val[exp.trim()]
         }
 
         return val
+    },
+
+    _setVMVal(vm, exp, value) {
+        var val = vm
+        var exps = exp.split(/\.|\[|\]/)
+
+        var len = exps.length
+        if (len > 1) {
+            exps.forEach(function (expChild, idx) {
+                expChild = expChild.trim()
+                if (idx < len - 1) {
+                    if (expChild !== '') {
+                        val = val[expChild]
+                    }
+                } else {
+                    val[expChild] = value
+                }
+            })
+        } else {
+            val[exp.trim()] = value
+        }
     }
 }
 
 var Updater = {
-    textUpdater (node, value) {
+    textUpdater(node, value) {
         node.textContent = value
+    },
+
+    modelUpdater(node, value) {
+        node.value = value === undefined ? '' : value
     }
 }
