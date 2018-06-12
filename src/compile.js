@@ -2,7 +2,6 @@ class Compile {
     constructor(vm, node) {
         this.dirMap = [
             'v-text',
-            'v-if',
             'v-model'
         ]
 

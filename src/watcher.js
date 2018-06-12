@@ -1,13 +1,7 @@
 function Watcher(vm, exp, cb) {
     this.$vm = vm
+    this.$exp = exp
     this.$cb = cb
-
-    console.log(typeof exp)
-    if (typeof exp === 'funciton') {
-        this.getter = exp
-    } else {
-        this.getter = this.parseGetter(vm, exp)
-    }
 
     this.value = this.getValue()
 
@@ -17,13 +11,7 @@ function Watcher(vm, exp, cb) {
 
 Watcher.prototype = {
     getValue: function () {
-        return this.getter.call(this.$vm)
-    },
-
-    parseGetter: function (vm, exp) {
-        return function () {
-            return CompileUtil._getVMVal(vm, exp)
-        }
+        return CompileUtil._getVMVal(this.$vm, this.$exp)
     },
 
     update: function () {
